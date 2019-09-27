@@ -138,9 +138,9 @@ def get_calendars(calendar):
     """
     cals = {}
     cal_names = [
-        tab['calendar']['name']
-        for tab
-        in conf['tabs']
+        value['calendar']['name']
+        for value
+        in conf['tabs'].values()
         ]
     all_cals = calendar.calendarList().list().execute()['items']
     for cal in all_cals:
@@ -188,10 +188,10 @@ def get_calendar_entries(calendar, cal_id: str, cal_name: str):
     """
     tab_hours = defaultdict(int)
     entry_names = {
-        tab: tab['calendar']['entry_aliases']
-        for tab
-        in conf['tabs']
-        if tab['calendar']['name'] == cal_name
+        tab: value['calendar']['entry_aliases']
+        for tab, value
+        in conf['tabs'].items()
+        if value['calendar']['name'] == cal_name
         }
     all_entries = calendar.events().list(
         calendarId = cal_id,
@@ -279,8 +279,8 @@ def input_hours_into_sheet(sheets, sheet_ids: dict, tab_hours: dict):
 
     """
     tab_starts = {}
-    for tab in conf['tabs']:
-        cell = tab['start']['cell']
+    for tab, value in conf['tabs'].items():
+        cell = value['start']['cell']
 
         alpha = ALPHA.search(cell)
         col_int = col_to_day(cell[0:alpha.end()].upper())
@@ -294,8 +294,8 @@ def input_hours_into_sheet(sheets, sheet_ids: dict, tab_hours: dict):
             logger.error(e)
             continue
         start = pendulum.datetime(
-            tab['start']['year'],
-            tab['start']['month'],
+            value['start']['year'],
+            value['start']['month'],
             1,
             tz = 'local',
             )
