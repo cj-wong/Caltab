@@ -232,7 +232,7 @@ def get_sheet_ids(sheets, tabs: list):
     for sheet in spreadsheet:
         properties = sheet['properties']
         if properties['title'] in tabs:
-            ids[properties['title']] = properties['sheetId']
+            sheet_ids[properties['title']] = properties['sheetId']
 
     return sheet_ids
 
