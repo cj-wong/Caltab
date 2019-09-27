@@ -1,0 +1,13 @@
+# Sublime Text files
+*.sublime-*
+
+# Python files
+*venv*
+*__pycache__/*
+*.pyc
+
+# Project-specific files
+config.yaml
+credentials*.json
+token.pickle
+calendar-to-sheets.log
