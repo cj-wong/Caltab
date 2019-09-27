@@ -1,0 +1,17 @@
+# Copy this file to config.yaml to use.
+'spreadsheet_id': ''
+'tabs': {
+  'Sheet Tab 1 Name': {
+    'calendar': {
+      'name': 'Name',
+      'entry_aliases': [
+        'alias 1',
+      ]
+    }
+    'start': {
+      'cell': 'B3',
+      'year': 2019,
+      'month': 9,
+    }
+  }
+},
