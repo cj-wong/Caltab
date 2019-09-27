@@ -321,6 +321,13 @@ if __name__ == '__main__':
     calendar, sheets = authorize()
     sheet_ids = get_sheet_ids(sheets, conf['tabs'].keys())
     cals = get_calendars(calendar)
+    if not cals:
+        logger.error(
+            'No calendars were found matching any in your configuration'
+            )
     for cal_name, cal_id in cals.items():
         tab_hours = get_calendar_entries(calendar, cal_id, cal_name)
-        input_hours_into_sheet(sheets, tab_hours)
+        if tab_hours:
+            input_hours_into_sheet(sheets, tab_hours)
+        else:
+            logger.info('No tab-hours were found for yesterday')
