@@ -92,7 +92,7 @@ def authorize():
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            # Changed from: 
+            # Changed from:
             #   creds.refresh(Request())
             # Since this will be run as a cron job i.e. no UI,
             # log this condition and exit instead.
@@ -242,13 +242,13 @@ def col_to_day(col: str):
     `col` will always be capitalized since `.upper` is called.
 
     Args:
-        col (str): e.g. 'A' (1), 'B', (2) 'AA' (27)
+        col (str): e.g. 'B' (1), 'C', (2) 'AA' (26)
 
     Returns:
         int: the day representation of the column
 
     """
-    return ord(col) - 64
+    return ord(col) - 65
 
 
 def day_to_col(day: int):
@@ -261,13 +261,14 @@ def day_to_col(day: int):
         str: the column represented by the day
 
     """
+    day += 65
     if day <= 90: # ord('Z')
         return chr(day)
     else:
         return f'A{chr(day-26)}'
 
 
-def input_hours_into_sheet(sheets, sheet_ids: dict, tab_hours: dict):
+def input_hours_into_sheet(sheets, tab_hours: dict):
     """Inputs hours given `tab_hours` into their respective sheets.
 
     Args:
@@ -300,17 +301,18 @@ def input_hours_into_sheet(sheets, sheet_ids: dict, tab_hours: dict):
             tz = 'local',
             )
         row += (YESTERDAY - start).months
-        tab_starts[tab] = f'{col}{row}'
+        tab_starts[tab] = f'{tab}!{col}{row}'
 
     values = sheets.spreadsheets().values()
 
     for tab, hour in tab_hours.items():
-        values.update(
-            spreadsheetId = sheet_ids[tab],
+        update = values.update(
+            spreadsheetId = conf['spreadsheet_id'],
             range = tab_starts[tab],
             valueInputOption = 'USER_ENTERED',
-            body = {'values': [hour]},
-            )
+            body = {'values': [[hour]]},
+            ).execute()
+        logger.info(f'Cells in sheet {tab} updated: {len(update)}')
 
     return
 
@@ -321,4 +323,4 @@ if __name__ == '__main__':
     cals = get_calendars(calendar)
     for cal_name, cal_id in cals.items():
         tab_hours = get_calendar_entries(calendar, cal_id, cal_name)
-        input_hours_into_sheet(sheets, sheet_ids, tab_hours)
+        input_hours_into_sheet(sheets, tab_hours)
