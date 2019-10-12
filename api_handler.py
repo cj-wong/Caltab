@@ -23,7 +23,6 @@ from config import LOGGER
 
 # Replaced imports:
 #   os.path -> pathlib.Path
-#   datetime -> pendulum
 # Moved imports:
 #   from google.oauth2 import service_account
 # Removed imports:

@@ -19,6 +19,9 @@ from googleapiclient.discovery import build
 
 from config import CONF, LOGGER, TODAY, YESTERDAY
 
+# Replaced imports:
+#   datetime -> pendulum
+
 
 def get_tab(entry: str, entry_names: Dict[str, list]) -> Union[str, None]:
     """Gets a tab given an `entry` and `entry_names`

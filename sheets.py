@@ -19,6 +19,8 @@ from googleapiclient.discovery import build
 
 from config import CONF, LOGGER
 
+# Replaced imports:
+#   datetime -> pendulum
 
 ALPHA = re.compile(r'[a-z]+', re.IGNORECASE)
 NUM = re.compile(r'[0-9]+')
