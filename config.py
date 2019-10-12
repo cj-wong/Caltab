@@ -13,6 +13,7 @@
 # limitations under the License.
 import logging
 
+import pendulum
 import yaml
 
 
@@ -33,6 +34,9 @@ CH.setFormatter(FORMATTER)
 
 LOGGER.addHandler(FH)
 LOGGER.addHandler(CH)
+
+YESTERDAY = pendulum.yesterday()
+TODAY = pendulum.today()
 
 with open('config.yaml', 'r') as f:
     conf = yaml.safe_load(f)
