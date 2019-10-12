@@ -17,8 +17,8 @@ from pathlib import Path
 
 from google.oauth2 import service_account
 
-import calendar
-import sheets
+import gcalendar
+import gsheets
 from config import LOGGER
 
 # Replaced imports:
@@ -97,6 +97,6 @@ def authorize():
     # Changed from:
     #   service = build('calendar', 'v3', credentials=creds)
     return (
-        calendar.Calendar(creds),
-        sheets.Sheets(creds),
+        gcalendar.Calendar(creds),
+        gsheets.Sheets(creds),
         )
