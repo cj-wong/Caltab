@@ -39,4 +39,4 @@ YESTERDAY = pendulum.yesterday()
 TODAY = pendulum.today()
 
 with open('config.yaml', 'r') as f:
-    conf = yaml.safe_load(f)
+    CONF = yaml.safe_load(f)
