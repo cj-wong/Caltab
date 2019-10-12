@@ -13,33 +13,20 @@ This code is designed around the following:
     - `pendulum` in place of `datetime`
     - `pyyaml` for managing configuration
     - other [requirements](requirements.txt)
-- [setup on *Google APIs*](https://console.developers.google.com/)
-    - create credentials for both the Calendar and Sheets APIs
-    - create a service account
-    - add the service account to
-        - all source *Google Calendar* calendars from which you plan to read
-            - minimum permissions: **See all event details**
-        - your destination *Google Sheets* spreadsheet
-            - minimum permissions: **Edit files directly**
-- [setup on *Google Sheets*](#sheet-structure)
 
 ## Setup
 
-Set up your environment for self-hosting. Read [Requirements](#Requirements) for dependencies.
-Python `venv` is highly recommended for managing your files, including dependencies.
-Like so:
-
-```
-$ git clone <url> && cd REPO_NAME
-$ # venv may be installable in package management.
-$ # For Debian-like distros, `apt install python3-venv`
-$ python -m venv venv
-$ . venv/bin/activate
-(venv) $ pip install -r requirements.txt
-(venv) $ # See directly below for setting up your config.
-```
-
-To set up your configuration, copy [`config.yaml.example`](config.yaml.example) into `config.yaml` and change all the fields according to your build.
+1. Set up [*Google APIs*](https://console.developers.google.com/).
+2. Create credentials for both the Calendar and Sheets APIs.
+3. Create a service account.
+4. Rearrange your calendar as needed. See [below](#calendar-structure).
+5. Create or modify your destination sheet(s). See [below](#sheet-structure).
+6. Add the service account by inviting its email alias to the following:
+    - all source *Google Calendar* calendars from which you plan to read
+        - minimum permissions: **See all event details**
+    - your destination *Google Sheets* spreadsheet
+        - minimum permissions: **Edit files directly**
+7. Copy [`config.yaml.example`](config.yaml.example) into `config.yaml` and [fill](#configuration) all the fields. Add extra `tabs` as needed.
 
 ## Calendar Structure
 
