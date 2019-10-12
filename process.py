@@ -20,10 +20,10 @@ from collections import defaultdict
 from pathlib import Path
 
 import pendulum
-import yaml
-
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+
+from config import CONF, LOGGER
 
 # Replaced imports:
 #   os.path -> pathlib.Path
@@ -36,26 +36,6 @@ SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
     ]
 
-logger = logging.getLogger('calendar-to-sheets')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('calendar-to-sheets.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
-
-with Path('config.yaml').open() as f:
-    conf = yaml.safe_load(f)
 
 YESTERDAY = pendulum.yesterday()
 TODAY = pendulum.today()
@@ -88,7 +68,7 @@ def authorize():
             try:
                 creds = pickle.load(token)
             except EOFError:
-                logger.warning('token.pickle is likely empty')
+                LOGGER.warning('token.pickle is likely empty')
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -96,7 +76,7 @@ def authorize():
             #   creds.refresh(Request())
             # Since this will be run as a cron job i.e. no UI,
             # log this condition and exit instead.
-            logger.error('Credentials expired')
+            LOGGER.error('Credentials expired')
             sys.exit(1)
         else:
             # Changed from:
@@ -127,7 +107,7 @@ def authorize():
 
 
 def get_calendars(calendar):
-    """Gets calendars filtered by valid calendar names in config.yaml.
+    """Gets calendars filtered by valid calendar names in CONFig.yaml.
 
     Args:
         calendar (googleapiclient.discovery.Resource): calendar res
@@ -140,7 +120,7 @@ def get_calendars(calendar):
     cal_names = [
         value['calendar']['name']
         for value
-        in conf['tabs'].values()
+        in CONF['tabs'].values()
         ]
     all_cals = calendar.calendarList().list().execute()['items']
     for cal in all_cals:
@@ -190,7 +170,7 @@ def get_calendar_entries(calendar, cal_id: str, cal_name: str):
     entry_names = {
         tab: value['calendar']['entry_aliases']
         for tab, value
-        in conf['tabs'].items()
+        in CONF['tabs'].items()
         if value['calendar']['name'] == cal_name
         }
     all_entries = calendar.events().list(
@@ -209,7 +189,7 @@ def get_calendar_entries(calendar, cal_id: str, cal_name: str):
         end = pendulum.parse(entry['end']['dateTime'])
         tab_hours[tab] += (end - start).seconds/3600
         if tab_hours[tab] >= 24:
-            logger.warning(f'Hours exceeded for tab {tab}')
+            LOGGER.warning(f'Hours exceeded for tab {tab}')
 
     return tab_hours
 
@@ -227,7 +207,7 @@ def get_sheet_ids(sheets, tabs: list):
     """
     sheet_ids = {}
     spreadsheet = sheets.spreadsheets().get(
-        spreadsheetId = conf['spreadsheet_id']
+        spreadsheetId = CONF['spreadsheet_id']
         ).execute()['sheets']
     for sheet in spreadsheet:
         properties = sheet['properties']
@@ -237,7 +217,7 @@ def get_sheet_ids(sheets, tabs: list):
     return sheet_ids
 
 
-def col_to_day(col: str):
+def col_to_day(col: str) -> int:
     """Converts a column `col` from a str to 1-indexed int (day).
     `col` will always be capitalized since `.upper` is called.
 
@@ -251,7 +231,7 @@ def col_to_day(col: str):
     return ord(col) - 65
 
 
-def day_to_col(day: int):
+def day_to_col(day: int) -> str:
     """Converts a 1-based day back to str column format.
 
     Args:
@@ -280,7 +260,7 @@ def input_hours_into_sheet(sheets, tab_hours: dict):
 
     """
     tab_starts = {}
-    for tab, value in conf['tabs'].items():
+    for tab, value in CONF['tabs'].items():
         cell = value['start']['cell']
 
         alpha = ALPHA.search(cell)
@@ -292,7 +272,7 @@ def input_hours_into_sheet(sheets, tab_hours: dict):
         try:
             row = int(cell[alpha.end():num.end()])
         except (TypeError, ValueError) as e:
-            logger.error(e)
+            LOGGER.error(e)
             continue
         start = pendulum.datetime(
             value['start']['year'],
@@ -307,27 +287,27 @@ def input_hours_into_sheet(sheets, tab_hours: dict):
 
     for tab, hour in tab_hours.items():
         update = values.update(
-            spreadsheetId = conf['spreadsheet_id'],
+            spreadsheetId = CONF['spreadsheet_id'],
             range = tab_starts[tab],
             valueInputOption = 'USER_ENTERED',
             body = {'values': [[hour]]},
             ).execute()
-        logger.info(f'Cells in sheet {tab} updated: {len(update)}')
+        LOGGER.info(f'Cells in sheet {tab} updated: {len(update)}')
 
     return
 
 
 if __name__ == '__main__':
     calendar, sheets = authorize()
-    sheet_ids = get_sheet_ids(sheets, conf['tabs'].keys())
+    sheet_ids = get_sheet_ids(sheets, CONF['tabs'].keys())
     cals = get_calendars(calendar)
     if not cals:
-        logger.error(
-            'No calendars were found matching any in your configuration'
+        LOGGER.error(
+            'No calendars were found matching any in your CONFiguration'
             )
     for cal_name, cal_id in cals.items():
         tab_hours = get_calendar_entries(calendar, cal_id, cal_name)
         if tab_hours:
             input_hours_into_sheet(sheets, tab_hours)
         else:
-            logger.info('No tab-hours were found for yesterday')
+            LOGGER.info('No tab-hours were found for yesterday')
