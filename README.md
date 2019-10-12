@@ -77,16 +77,16 @@ You can modify the rows and relabel column A, but the column structure should be
 
 ## [Configuration](config.yaml.example)
 
-- `spreadsheet_id` - ID of the destination *Google Sheets* spreadsheet
-- `tabs` - individual destination sheets of the spreadsheet
-    - `Sheet Tab Name` - name of one sheet
-        - `calendar` - the source *Google Calendar* calendar used to scan entries
-            - `name` - name of the calendar
-            - `entry_aliases` - a list of aliases to match to `Sheet Tab Name`
-        - `start` - starting reference of the sheet
-            - `cell` - the top-left cell, as defined in [Sheet Structure](#sheet-structure)
-            - `year` - the calendar year corresponding to that cell
-            - `month` - the calendar month corresponding to that cell
+- `spreadsheet_id`: ID of the destination *Google Sheets* spreadsheet
+- `tabs`: individual destination sheets of the spreadsheet
+    - `Sheet Tab Name`: name of one sheet
+        - `calendar`: the source *Google Calendar* calendar used to scan entries
+            - `name`: name of the calendar
+            - `entry_aliases`: a list of aliases to match to `Sheet Tab Name`
+        - `start`: starting reference of the sheet
+            - `cell`: the top-left cell, as defined in [Sheet Structure](#sheet-structure)
+            - `year`: the calendar year corresponding to that cell
+            - `month`: the calendar month corresponding to that cell
 
 ## Disclaimer
 
