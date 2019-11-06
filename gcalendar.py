@@ -41,13 +41,13 @@ def get_tab(entry: str, entry_names: Dict[str, list]) -> Union[str, None]:
     else:
         for name, aliases in entry_names.items():
             if entry in aliases:
-                return entry
+                return name
 
     return None
 
 
 class Calendar:
-    """Class for manging calendar."""
+    """Class for managing calendar."""
     def __init__(self, credentials) -> None:
         """Initialize the Calendar interface.
 
