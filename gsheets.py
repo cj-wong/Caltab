@@ -113,9 +113,7 @@ class Sheets:
             try:
                 row = int(cell[alpha.end():num.end()])
             except (TypeError, ValueError) as e:
-                message = f'{e}, Skipping {tab}'
-                print(message)
-                LOGGER.error(message)
+                LOGGER.error(f'{e}, Skipping {tab}')
                 continue
             start = pendulum.datetime(
                 value['start']['year'],
