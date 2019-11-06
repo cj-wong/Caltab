@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.1] - 2019-11-05
+### Changed
+- Change stream logger error level to `INFO`
+
+### Fixed
+- Use `name` instead of `entry` when checking aliases in [`gcalendar.py`](gcalendar.py)
+
 ## [1.1] - 2019-10-12
 ### Added
 - [`config.py`](config.py) handles configuration shared between all the modules.
