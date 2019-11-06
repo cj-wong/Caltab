@@ -24,7 +24,7 @@ FH = logging.FileHandler('calendar-to-sheets.log')
 FH.setLevel(logging.DEBUG)
 
 CH = logging.StreamHandler()
-CH.setLevel(logging.WARNING)
+CH.setLevel(logging.INFO)
 
 FORMATTER = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
