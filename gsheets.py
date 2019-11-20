@@ -17,7 +17,7 @@ from typing import Dict
 import pendulum
 from googleapiclient.discovery import build
 
-from config import CONF, LOGGER
+from config import CONF, LOGGER, YESTERDAY
 
 # Replaced imports:
 #   datetime -> pendulum
@@ -133,4 +133,6 @@ class Sheets:
                 valueInputOption='USER_ENTERED',
                 body={'values': [[hour]]},
                 ).execute()
-            LOGGER.info(f'Cells in sheet {tab} updated: {len(update)}')
+            LOGGER.info(
+                f"Cells in sheet {tab} updated: {update['updatedCells']}"
+                )

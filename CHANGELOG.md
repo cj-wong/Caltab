@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.2] - 2019-11-20
+### Changed
+- Changed `len(update)` to more sensible `update['updatedCells']` in [`gsheets.py`](gsheets.py)
+
+### Fixed
+- Fixed issue with missing `YESTERDAY` reference in [`gsheets.py`](gsheets.py)
+
 ## [1.1.1] - 2019-11-05
 ### Changed
 - Change stream logger error level to `INFO`
