@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.3] - 2019-12-25
+### Changed
+- Use `RotatingFileHandler` for logs
+
 ## [1.1.2] - 2019-11-20
 ### Changed
 - Changed `len(update)` to more sensible `update['updatedCells']` in [`gsheets.py`](gsheets.py)

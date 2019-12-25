@@ -11,3 +11,4 @@ config.yaml
 credentials*.json
 token.pickle
 calendar-to-sheets.log
+calendar-to-sheets.log.[1-5]

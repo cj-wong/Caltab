@@ -20,7 +20,11 @@ import yaml
 LOGGER = logging.getLogger('calendar-to-sheets')
 LOGGER.setLevel(logging.DEBUG)
 
-FH = logging.FileHandler('calendar-to-sheets.log')
+FH = logging.handlers.RotatingFileHandler(
+    'calendar-to-sheets.log',
+    maxBytes=4096,
+    backupCount=5,
+    )
 FH.setLevel(logging.DEBUG)
 
 CH = logging.StreamHandler()
