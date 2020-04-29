@@ -35,12 +35,7 @@ SCOPES = [
     ]
 
 
-class Error(Exception):
-    """Base exception for api_handler"""
-    pass
-
-
-class ExpiredCredentialsError(Error):
+class ExpiredCredentials(RuntimeError):
     """Credentials were expired."""
     def __init__(self):
         super().__init__('Credentials expired')
@@ -78,7 +73,7 @@ def authorize() -> service_account.Credentials:
             # Since this will be run as a cron job, i.e. no UI,
             # log this condition and raise an error instead.
             LOGGER.error('Credentials expired')
-            raise ExpiredCredentialsError
+            raise ExpiredCredentials
         else:
             # Changed from:
             #   flow = InstalledAppFlow.from_client_secrets_file(
