@@ -26,20 +26,19 @@ def main() -> None:
     reads calendars, and writes to spreadsheet if records were found.
 
     """
-
     creds = google.api_handler.authorize()
-    sheets = google.sheets.Sheets(creds)
-    calendar = google.calendar.Calendar(creds)
-    sheet_ids = sheets.get_ids(CONF['tabs'].keys())
-    cals = calendar.get_calendars()
-    if not cals:
+    calendar_api = google.calendar.Calendar(creds)
+    sheets_api = google.sheets.Sheets(creds)
+    calendars = calendar_api.get_calendar_ids()
+    if not calendars:
         LOGGER.error(
             'No calendars were found matching any in your configuration'
             )
-    for cal_name, cal_id in cals.items():
-        tab_hours = calendar.get_entries(cal_id, cal_name)
+        return
+    for cal_name, cal_id in calendars.items():
+        tab_hours = calendar_api.get_entries(cal_name, cal_id)
         if tab_hours:
-            sheets.input_hours(tab_hours)
+            sheets_api.input_hours(tab_hours)
         else:
             LOGGER.info('No tab-hours were found for yesterday')
 

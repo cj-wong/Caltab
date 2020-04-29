@@ -12,53 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from typing import Dict
+from typing import Dict, Union
 
 import pendulum
 from googleapiclient.discovery import build
 
-from config import CONF, LOGGER, YESTERDAY
+import config
 
 # Replaced imports:
 #   datetime -> pendulum
 
 ALPHA = re.compile(r'[a-z]+', re.IGNORECASE)
-NUM = re.compile(r'[0-9]+')
+ORD_Z = ord('Z')
 
 
-def col_to_day(col: str) -> int:
-    """Converts a column `col` from a str to 1-indexed int (day).
-    `col` will always be capitalized since `.upper` is called.
-
-    Args:
-        col (str): e.g. 'B' (1), 'C', (2) 'AA' (26)
-
-    Returns:
-        int: the day representation of the column
-
-    """
-    return ord(col) - 65
-
-
-def day_to_col(day: int) -> str:
-    """Converts a 1-based day back to str column format.
+def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
+    """Retrieve the cell representing yesterday, given the starting
+    cell and its characteristics. Note that if the cell isn't valid,
+    `AttributeError` ,`TypeError`, or `ValueError` may be raised,
+    from attempted string slicing (e.g. `cell[:col_end]`) and type-casts
+    (e.g. `int(cell[col_end:])`).
 
     Args:
-        day (int): the day of the month to convert to column
+        start (Dict[str, Union[str, int]]): the characteristics of
+            the starting (top-left) cell in the sheet; contains
+            'cell' (spreadsheet format), 'year', and 'month'
 
     Returns:
-        str: the column represented by the day
+        str: the cell in spreadsheet format, e.g. 'A1'
 
     """
-    day += 65
-    if day <= 90: # ord('Z')
-        return chr(day)
-    else:
-        return f'A{chr(day-26)}'
+    cell = start['cell']
+    first = pendulum.datetime(start['year'], start['month'], 1, tz='local')
+    col_end = ALPHA.search(cell).end()
+    col = cell[:col_end].upper()
+    # We want to perform math on cols to get the right column.
+    # To do so, we must convert the letters using `ord()`.
+    ncol = ord(col)
+    # Columns are 1-indexed, so subtract to get the true offset.
+    ncol += config.YESTERDAY.day - 1
+    if ncol <= ORD_Z:
+        col = chr(ncol)
+    else: # After Z in columns are AA, AB, etc.
+        col = f'A{chr(ncol - 26)}'
+    # `monthy` represents the row given year and month, with offsets
+    # from `start`.
+    monthy = int(cell[col_end:])
+    monthy += (config.YESTERDAY - first).months
+
+    return f'{col}{monthy}'
 
 
 class Sheets:
-    """Class for manging sheets."""
+    """Class for manging sheets.
+
+    Attributes:
+        interface (Resource): an interface created from credentials;
+            used to retrieve spreadsheets and their sheets
+
+    """
     def __init__(self, credentials) -> None:
         """Initialize the Sheets interface.
 
@@ -72,67 +84,48 @@ class Sheets:
             credentials=credentials
             ).spreadsheets()
 
-    def get_ids(self, tabs: list) -> Dict[str, str]:
-        """Gets sheet IDs filtered by `entry_names`.
-
-        Args:
-            tabs (keys): tab names to filter for
+    def get_tab_cells(self) -> Dict[str, str]:
+        """For all valid tabs, get the cell representing yesterday so
+        the hours can be recorded there.
 
         Returns:
-            dict: {name: id}
+            Dict[str, str]: {tab name: syntax for yesterday's cell}
 
         """
-        sheet_ids = {}
-        spreadsheet = self.interface.get(
-            spreadsheetId = CONF['spreadsheet_id']
-            ).execute()['sheets']
-        for sheet in spreadsheet:
-            properties = sheet['properties']
-            if properties['title'] in tabs:
-                sheet_ids[properties['title']] = properties['sheetId']
+        tab_cells = {}
+        for tab, conf in config.TABS.items():
+            start = conf['start']
+            cell = start['cell']
 
-        return sheet_ids
+            try:
+                yesterday = get_yesterday_cell(start)
+            except (AttributeError, TypeError, ValueError) as e:
+                config.LOGGER.error(f'Skipping {tab}: {e}')
+                continue
+
+            tab_cells[tab] = f'{tab}!{yesterday}'
+
+        return tab_cells
 
     def input_hours(self, tab_hours: Dict[str, int]) -> None:
         """Inputs hours given `tab_hours` into their respective sheets.
 
         Args:
-            tab_hours (dict): {tab: hours}
+            tab_hours (Dict[str, int]): {tab name: hours}
 
         """
-        tab_starts = {}
-        for tab, value in CONF['tabs'].items():
-            cell = value['start']['cell']
-
-            alpha = ALPHA.search(cell)
-            col_int = col_to_day(cell[0:alpha.end()].upper())
-            col_int += YESTERDAY.day - 1
-            col = day_to_col(col_int)
-
-            num = NUM.search(cell)
-            try:
-                row = int(cell[alpha.end():num.end()])
-            except (TypeError, ValueError) as e:
-                LOGGER.error(f'{e}, Skipping {tab}')
-                continue
-            start = pendulum.datetime(
-                value['start']['year'],
-                value['start']['month'],
-                1,
-                tz='local',
-                )
-            row += (YESTERDAY - start).months
-            tab_starts[tab] = f'{tab}!{col}{row}'
 
         values = self.interface.values()
 
+        tab_cells = self.get_tab_cells()
+
         for tab, hour in tab_hours.items():
             update = values.update(
-                spreadsheetId=CONF['spreadsheet_id'],
-                range=tab_starts[tab],
+                spreadsheetId=config.SPREADSHEET_ID,
+                range=tab_cells[tab],
                 valueInputOption='USER_ENTERED',
                 body={'values': [[hour]]},
                 ).execute()
-            LOGGER.info(
+            config.LOGGER.info(
                 f"Cells in sheet {tab} updated: {update['updatedCells']}"
                 )

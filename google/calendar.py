@@ -15,44 +15,54 @@ from collections import defaultdict
 from typing import Dict, Union
 
 import pendulum
-from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from googleapiclient.discovery import build, Resource
 
-from config import CONF, LOGGER, TODAY, YESTERDAY
+import config
 
 # Replaced imports:
 #   datetime -> pendulum
 
 
-def get_tab(entry: str, entry_names: Dict[str, list]) -> Union[str, None]:
-    """Gets a tab given an `entry` and `entry_names`
-    to filter, if the entry matches.
+def get_tab(entry: str) -> Union[str, None]:
+    """Gets a tab given an `entry`, if it exists in `config.TAB_NAMES`.
 
     Args:
         entry (str): the name of an entry
         entry_names (dict): {tab: [aliases]}
 
     Returns:
-        str: if a tab was matched
-        None: if no tabs were matched
+        str: if `entry` matched a tab in `config.TAB_NAMES`
+
+    Raises:
+        TabNotFound: if `entry` did not match
 
     """
-    if entry in entry_names:
-        return entry
-    else:
-        for name, aliases in entry_names.items():
-            if entry in aliases:
-                return name
+    for name, aliases in config.TAB_NAMES.items():
+        if entry == name or entry in aliases:
+            return name
 
-    return None
+    raise TabNotFound
+
+
+class TabNotFound(ValueError):
+    """The tab name wasn't found in the configuration. Ignore it."""
+    pass
 
 
 class Calendar:
-    """Class for managing calendar."""
-    def __init__(self, credentials) -> None:
+    """Class for managing calendar.
+
+    Attributes:
+        interface (Resource): an interface created from credentials;
+            used to retrieve calendars and entries per calendar
+
+    """
+    def __init__(self, credentials: service_account.Credentials) -> None:
         """Initialize the Calendar interface.
 
         Args:
-            credentials: the Google API credentials
+            credentials (service_account.Credentials): for Google APIs
 
         """
         self.interface = build(
@@ -61,64 +71,57 @@ class Calendar:
             credentials=credentials
             )
 
-    def get_calendars(self) -> Dict[str, str]:
-        """Gets calendars filtered by valid calendar names in config.yaml.
+    def get_calendar_ids(self) -> Dict[str, str]:
+        """Gets IDs for calendars configured in config.yaml. They will
+        be used for retrieving entries/events per calendar.
 
         Returns:
-            dict: {summary: id}
+            Dict[str, str]: {calendar name: calendar id}
 
         """
         cals = {}
-        cal_names = [
-            value['calendar']['name']
-            for value
-            in CONF['tabs'].values()
-            ]
 
         all_cals = self.interface.calendarList().list().execute()['items']
 
         for cal in all_cals:
-            if cal['summary'] in cal_names:
-                cals[cal['summary']] = cal['id']
+            calendar = cal['summary']
+            if calendar in config.CALS:
+                cals[calendar] = cal['id']
 
         return cals
 
-    def get_entries(self, cal_id: str, cal_name: str) -> Dict[str, int]:
-        """Gets entries in a calendar given `cal_id`
-        from yesterday until today.
+    def get_entries(self, cal_name: str, cal_id: str) -> Dict[str, int]:
+        """Gets entries in a calendar given `cal_id` from yesterday
+        until today. We are interested in events that have elapsed
+        from then and now.
 
         Args:
-            cal_id (str): the ID of the calendar
             cal_name (str): the name (summary) of the calendar
+            cal_id (str): the ID of the calendar
 
         Returns:
             dict: {tab: hours}
 
         """
         tab_hours = defaultdict(int)
-        entry_names = {
-            tab: value['calendar']['entry_aliases']
-            for tab, value
-            in CONF['tabs'].items()
-            if value['calendar']['name'] == cal_name
-            }
 
         all_entries = self.interface.events().list(
             calendarId=cal_id,
-            timeMin=YESTERDAY,
-            timeMax=TODAY,
+            timeMin=config.YESTERDAY,
+            timeMax=config.TODAY,
             singleEvents=True,
             orderBy='startTime',
             ).execute()['items']
 
         for entry in all_entries:
-            tab = get_tab(entry['summary'], entry_names)
-            if tab is None:
+            try:
+                tab = get_tab(entry['summary'])
+            except TabNotFound:
                 continue
             start = pendulum.parse(entry['start']['dateTime'])
             end = pendulum.parse(entry['end']['dateTime'])
             tab_hours[tab] += (end - start).seconds/3600
             if tab_hours[tab] >= 24:
-                LOGGER.warning(f'Hours exceeded for tab {tab}')
+                config.LOGGER.warning(f'Hours exceeded 24 for tab {tab}')
 
         return tab_hours
