@@ -4,6 +4,8 @@
 
 Want to record event duration from your *[Google Calendar][GCAL]* calendar into a *[Google Sheets][GSHEETS]* spreadsheet? This project has you covered: it automates the process for you! Each tracked event can be recorded into a spreadsheet containing a sheet with the same name. Aliases can be added per event as necessary.
 
+Although you can run the project manually, I highly recommend using an automation system like `cron` and running once a day at a specific time.
+
 ## Requirements
 
 This code is designed around the following:
@@ -62,7 +64,7 @@ Each event in the configuration must belong only to one calendar and must only b
 3. For each sheet/tab you plan to use with calendar tracking, copy the template starting with the name up til `month:`. Follow the below instructions.
 
     - List each tab under `tabs:` with aliases and other attributes. **Note that each tabs must correspond to the `tabs:` under at least one calendar entry in `calendars:`.**
-    - Record the starting cell (top-left cell) location into `cell:` under `start:`. In the example below, it's `cell: B2`.
+    - Record the starting cell (top-left cell) location into `cell:` under `start:`. In the example below, it's `cell: B2`. **This column value (e.g. the *B* in *B2*) cannot be *AA* or beyond.**
     - Also under `start:`, record which year (`year:`) and month (`month:`) that row corresponds to the cell. In the example below, it's `year: 2019` and `month: 1`.
 
 ### Sheets Structure
