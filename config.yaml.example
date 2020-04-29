@@ -1,17 +1,24 @@
 # Copy this file to config.yaml to use.
-'spreadsheet_id': ''
-'tabs': {
-  'Sheet Tab 1 Name': {
-    'calendar': {
-      'name': 'Name',
-      'entry_aliases': [
+
+calendars:
+  # Change 'Calendar 1' to the name of the calendar to read
+  Calendar 1:
+    tabs: [ # List all tabs that should be linked to the calendar.
+      'Sheet Tab 1',
+    ]
+
+spreadsheet:
+  # Change this to your spreadsheet's ID.
+  id: ''
+  tabs:
+    # Change 'Sheet Tab 1' to the name of the spreadsheet sheet/tab
+    Sheet Tab 1:
+      aliases: [ # Add aliases as necessary, one per line.
         'alias 1',
+        'alias 2',
       ]
-    }
-    'start': {
-      'cell': 'B3',
-      'year': 2019,
-      'month': 9,
-    }
-  }
-},
+      start: # Don't change 'start'.
+        cell: B3 # First top-left cell in the sheet.
+        # Both year and month determine the row offset.
+        year: 2019
+        month: 9

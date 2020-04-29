@@ -45,3 +45,37 @@ TODAY = pendulum.today()
 
 with open('config.yaml', 'r') as f:
     CONF = yaml.safe_load(f)
+
+
+SPREADSHEET_ID = CONF['spreadsheet']['id']
+TABS = CONF['spreadsheet']['tabs']
+# TAB_NAMES consists of tabs (keys) and their aliases (values)
+TAB_NAMES = {}
+# CALS consists of calendars that have tabs belonging in TAB_NAMES
+CALS = []
+
+for calendar, cal_vals in CONF['calendars'].items():
+    tabs = cal_vals['tabs']
+    for tab in tabs:
+        if tab in TABS:
+            if tab not in TAB_NAMES:
+                TAB_NAMES[tab] = TABS[tab]['aliases']
+            if calendar not in CALS:
+                CALS.append(calendar)
+
+# Both CALS and TAB_NAMES must not be empty.
+if not CALS and not TAB_NAMES:
+    raise InvalidConfiguration
+
+
+class InvalidConfiguration(ValueError):
+    """An invalid configuration was detected, stemming from
+    no calendars with corresponding tabs in TAB_NAMES.
+
+    """
+    def __init__(self) -> None:
+        super().__init__(
+            'Your configuration was invalid. Most likely you did not put '
+            'tabs into your calendars.\nTabs must be present in both the '
+            'calendar ("tabs") and spreadsheet settings ("tabs").'
+            )
