@@ -1,4 +1,4 @@
-# Copyright 2019 cj-wong
+# Copyright 2019-2020 cj-wong
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,8 +17,8 @@ from pathlib import Path
 
 from google.oauth2 import service_account
 
-import gcalendar
-import gsheets
+import google.calendar
+import google.sheets
 from config import LOGGER
 
 # Replaced imports:
@@ -46,15 +46,14 @@ class ExpiredCredentialsError(Error):
         super().__init__('Credentials expired')
 
 
-def authorize():
+def authorize() -> service_account.Credentials:
     """Adapted from Google's example:
     https://developers.google.com/calendar/quickstart/python
 
     See NOTICE for attribution.
 
     Returns:
-        tuple: of googleapiclient.discovery.Resource objects
-            (Calendar, Sheets)
+        service_account.Credentials: credentials from JSON/pickle
 
     """
     creds = None
@@ -66,12 +65,11 @@ def authorize():
     #   if os.path.exists('token.pickle'):
     #       with open('token.pickle', 'rb') as token:
     p = Path('token.pickle')
-    if p.exists():
+    try:
         with p.open(mode='rb') as token:
-            try:
-                creds = pickle.load(token)
-            except EOFError:
-                LOGGER.warning('token.pickle is likely empty')
+            creds = pickle.load(token)
+    except (EOFError, FileNotFoundError):
+        creds = None
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -96,7 +94,4 @@ def authorize():
 
     # Changed from:
     #   service = build('calendar', 'v3', credentials=creds)
-    return (
-        gcalendar.Calendar(creds),
-        gsheets.Sheets(creds),
-        )
+    return creds

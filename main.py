@@ -1,4 +1,4 @@
-# Copyright 2019 cj-wong
+# Copyright 2019-2020 cj-wong
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,21 @@ import logging
 from pathlib import Path
 from typing import Dict, Tuple, Union
 
-import api_handler
+import google.api_handler
+import google.calendar
+import google.sheets
 from config import CONF, LOGGER
 
 
-if __name__ == '__main__':
-    calendar, sheets = api_handler.authorize()
+def main() -> None:
+    """This function runs everything: authorizes the connection,
+    reads calendars, and writes to spreadsheet if records were found.
+
+    """
+
+    creds = google.api_handler.authorize()
+    sheets = google.sheets.Sheets(creds)
+    calendar = google.calendar.Calendar(creds)
     sheet_ids = sheets.get_ids(CONF['tabs'].keys())
     cals = calendar.get_calendars()
     if not cals:
@@ -33,3 +42,7 @@ if __name__ == '__main__':
             sheets.input_hours(tab_hours)
         else:
             LOGGER.info('No tab-hours were found for yesterday')
+
+
+if __name__ == '__main__':
+    main()
