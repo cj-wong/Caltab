@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.0.1] - 2021-03-26
+### Changed
+- Updated `google-api-python-client` to 2.0.2 and its dependencies. Although this is a breaking change from the module's end, no changes were needed for the project.
+- The project has been linted with `Flake8` and `mypy`.
+
+### Security
+- Updated `pyyaml` and `rsa` for dependabot alerts.
+
 ## [2.0.0] - 2020-04-29
 ### Changed
 - The project has been renamed to *Caltab* for brevity: a tab (spreadsheet) with calendar entries' durations.
@@ -41,16 +49,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [1.1.0] - 2019-10-12
 ### Added
-- [`config.py`](config.py) handles configuration shared between all the modules.
+- [config.py]. handles configuration shared between all the modules.
 - `api_handler.py` handles the *Google API* credentials and directly calls `gcalendar.py` & `gsheets.py`
 - `gcalendar.py` & `gsheets.py` handle their respective *Google API* modules.
 
 ### Changed
 - `process.py` was broken into the three new modules, for modularity.
-- Furthermore, the Apache License *Google LLC*-licensed code was moved to [`config.py`](config.py)
+- Furthermore, the Apache License *Google LLC*-licensed code was moved to [config.py].
 - Instead of calling `sys.exit`, a new exception `api_handler.ExpiredCredentialsError` is raised.
 - Several functions were simplified in name, because `gsheets.Sheets.get_sheet_ids` is redundant compared to `gsheets.Sheets.get_ids`.
 
 ## [1.0.0] - 2019-09-26
 ### Added
 - Initial version
+
+[config.py]: config.py
