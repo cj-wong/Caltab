@@ -1,4 +1,4 @@
-# Copyright 2019-2020 cj-wong
+# Copyright 2019-2021 cj-wong
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,13 +37,17 @@ SCOPES = [
 
 class ExpiredCredentials(RuntimeError):
     """Credentials were expired."""
+
     def __init__(self):
+        """Initialize the error with a message."""
         super().__init__('Credentials expired')
 
 
 def authorize() -> service_account.Credentials:
-    """Adapted from Google's example:
-    https://developers.google.com/calendar/quickstart/python
+    """Authorize the connection to the Google API.
+
+    Adapted from Google's example:
+        https://developers.google.com/calendar/quickstart/python
 
     See NOTICE for attribution.
 

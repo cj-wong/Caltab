@@ -1,4 +1,4 @@
-# Copyright 2019-2020 cj-wong
+# Copyright 2019-2021 cj-wong
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ ORD_Z = ord('Z')
 
 
 def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
-    """Retrieve the cell representing yesterday, given the starting
-    cell and its characteristics. Note that if the cell isn't valid,
-    `AttributeError` ,`TypeError`, or `ValueError` may be raised,
-    from attempted string slicing (e.g. `cell[:col_end]`) and type-casts
-    (e.g. `int(cell[col_end:])`).
+    """Retrieve the cell location representing yesterday.
+
+    The cell location can be determined given the starting cell location and
+    year and month offsets. Note that if the cell isn't valid, AttributeError
+    or TypeError may be raised, albeit indirectly.
 
     Args:
         start (Dict[str, Union[str, int]]): the characteristics of
@@ -40,6 +40,10 @@ def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
 
     Returns:
         str: the cell in spreadsheet format, e.g. 'A1'
+
+    Raises:
+        AttributeError: if any intermediary values are None
+        TypeError: slicing or casting on None
 
     """
     cell = start['cell']
@@ -64,13 +68,14 @@ def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
 
 
 class Sheets:
-    """Class for manging sheets.
+    """Class for Google Sheets.
 
     Attributes:
         interface (Resource): an interface created from credentials;
             used to retrieve spreadsheets and their sheets
 
     """
+
     def __init__(self, credentials) -> None:
         """Initialize the Sheets interface.
 
@@ -85,8 +90,9 @@ class Sheets:
             ).spreadsheets()
 
     def get_tab_cells(self) -> Dict[str, str]:
-        """For all valid tabs, get the cell representing yesterday so
-        the hours can be recorded there.
+        """Get the cell representing yesterday to be written with hours.
+
+        If the cell is invalid, nothing will be written.
 
         Returns:
             Dict[str, str]: {tab name: syntax for yesterday's cell}
@@ -108,13 +114,12 @@ class Sheets:
         return tab_cells
 
     def input_hours(self, tab_hours: Dict[str, int]) -> None:
-        """Inputs hours given `tab_hours` into their respective sheets.
+        """Input hours into their respective sheets.
 
         Args:
             tab_hours (Dict[str, int]): {tab name: hours}
 
         """
-
         values = self.interface.values()
 
         tab_cells = self.get_tab_cells()

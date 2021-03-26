@@ -1,4 +1,4 @@
-# Copyright 2019-2020 cj-wong
+# Copyright 2019-2021 cj-wong
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,9 @@ from config import CONF, LOGGER
 
 
 def main() -> None:
-    """This function runs everything: authorizes the connection,
-    reads calendars, and writes to spreadsheet if records were found.
+    """Run everything: authorization, calendar reads, spreadsheet writes.
+
+    The spreadsheet is only written if events in the calendar are found.
 
     """
     creds = google.api_handler.authorize()
@@ -32,8 +33,7 @@ def main() -> None:
     calendars = calendar_api.get_calendar_ids()
     if not calendars:
         LOGGER.error(
-            'No calendars were found matching any in your configuration'
-            )
+            'No calendars were found matching any in your configuration')
         return
     for cal_name, cal_id in calendars.items():
         tab_hours = calendar_api.get_entries(cal_name, cal_id)

@@ -1,4 +1,4 @@
-# Copyright 2019-2020 cj-wong
+# Copyright 2019-2021 cj-wong
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import config
 
 
 def get_tab(entry: str) -> Union[str, None]:
-    """Gets a tab given an `entry`, if it exists in `config.TAB_NAMES`.
+    """Get a tab given its name, if it exists in `config.TAB_NAMES`.
 
     Args:
         entry (str): the name of an entry
@@ -47,22 +47,24 @@ def get_tab(entry: str) -> Union[str, None]:
 
 class TabNotFound(ValueError):
     """The tab name wasn't found in the configuration. Ignore it."""
+
     pass
 
 
 class Calendar:
-    """Class for managing calendar.
+    """Class for managing Google Calendar.
 
     Attributes:
         interface (Resource): an interface created from credentials;
             used to retrieve calendars and entries per calendar
 
     """
+
     def __init__(self, credentials: service_account.Credentials) -> None:
-        """Initialize the Calendar interface.
+        """Initialize the Google Calendar interface.
 
         Args:
-            credentials (service_account.Credentials): for Google APIs
+            credentials (service_account.Credentials): creds for Google APIs
 
         """
         self.interface = build(
@@ -72,8 +74,9 @@ class Calendar:
             )
 
     def get_calendar_ids(self) -> Dict[str, str]:
-        """Gets IDs for calendars configured in config.yaml. They will
-        be used for retrieving entries/events per calendar.
+        """Get IDs for calendars configured in config.yaml.
+
+        The IDs will be used for retrieving entries/events per calendar.
 
         Returns:
             Dict[str, str]: {calendar name: calendar id}
@@ -91,9 +94,9 @@ class Calendar:
         return cals
 
     def get_entries(self, cal_name: str, cal_id: str) -> Dict[str, int]:
-        """Gets entries in a calendar given `cal_id` from yesterday
-        until today. We are interested in events that have elapsed
-        from then and now.
+        """Get entries in a calendar given `cal_id` from yesterday until today.
+
+        We are interested in events that have elapsed from then and now.
 
         Args:
             cal_name (str): the name (summary) of the calendar
