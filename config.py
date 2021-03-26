@@ -1,4 +1,4 @@
-# Copyright 2019 cj-wong
+# Copyright 2019-2021 cj-wong
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +13,27 @@
 # limitations under the License.
 import logging
 import logging.handlers
+from typing import Dict, List
 
 import pendulum
 import yaml
+
+
+class InvalidConfiguration(ValueError):
+    """An invalid configuration was detected.
+
+    The configuration error most likely stems from no calendars with
+    corresponding tabs in TAB_NAMES.
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize the configuration error with a message."""
+        super().__init__(
+            'Your configuration was invalid. Most likely you did not put '
+            'tabs into your calendars.\nTabs must be present in both the '
+            'calendar ("tabs") and spreadsheet settings ("tabs").'
+            )
 
 
 _LOGGER_NAME = 'caltab'
@@ -48,14 +66,13 @@ with open('config.yaml', 'r') as f:
 
 SPREADSHEET_ID = CONF['spreadsheet']['id']
 TABS = CONF['spreadsheet']['tabs']
-# TAB_NAMES consists of tabs (keys) and their aliases (values)
-TAB_NAMES = {}
+# TAB_NAMES consists of tabs and their aliases (list of aliases)
+TAB_NAMES: Dict[str, List[str]] = {}
 # CALS consists of calendars that have tabs belonging in TAB_NAMES
-CALS = []
+CALS: List[str] = []
 
 for calendar, cal_vals in CONF['calendars'].items():
-    tabs = cal_vals['tabs']
-    for tab in tabs:
+    for tab in cal_vals['tabs']:
         if tab in TABS:
             if tab not in TAB_NAMES:
                 TAB_NAMES[tab] = TABS[tab]['aliases']
@@ -65,16 +82,3 @@ for calendar, cal_vals in CONF['calendars'].items():
 # Both CALS and TAB_NAMES must not be empty.
 if not CALS and not TAB_NAMES:
     raise InvalidConfiguration
-
-
-class InvalidConfiguration(ValueError):
-    """An invalid configuration was detected, stemming from
-    no calendars with corresponding tabs in TAB_NAMES.
-
-    """
-    def __init__(self) -> None:
-        super().__init__(
-            'Your configuration was invalid. Most likely you did not put '
-            'tabs into your calendars.\nTabs must be present in both the '
-            'calendar ("tabs") and spreadsheet settings ("tabs").'
-            )

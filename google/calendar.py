@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import defaultdict
-from typing import Dict, Union
+from typing import Dict
 
 import pendulum
 from google.oauth2 import service_account
@@ -24,7 +24,7 @@ import config
 #   datetime -> pendulum
 
 
-def get_tab(entry: str) -> Union[str, None]:
+def get_tab(entry: str) -> str:
     """Get a tab given its name, if it exists in `config.TAB_NAMES`.
 
     Args:
@@ -106,7 +106,7 @@ class Calendar:
             dict: {tab: hours}
 
         """
-        tab_hours = defaultdict(int)
+        tab_hours: Dict[str, int] = defaultdict(int)
 
         all_entries = self.interface.events().list(
             calendarId=cal_id,
@@ -123,7 +123,7 @@ class Calendar:
                 continue
             start = pendulum.parse(entry['start']['dateTime'])
             end = pendulum.parse(entry['end']['dateTime'])
-            tab_hours[tab] += (end - start).seconds/3600
+            tab_hours[tab] += (end - start).seconds / 3600
             if tab_hours[tab] >= 24:
                 config.LOGGER.warning(f'Hours exceeded 24 for tab {tab}')
 

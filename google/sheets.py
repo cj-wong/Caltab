@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from typing import Dict, Union
+from typing import Dict
 
 import pendulum
 from googleapiclient.discovery import build
@@ -26,7 +26,7 @@ ALPHA = re.compile(r'[a-z]+', re.IGNORECASE)
 ORD_Z = ord('Z')
 
 
-def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
+def get_yesterday_cell(cell: str, start: Dict[str, int]) -> str:
     """Retrieve the cell location representing yesterday.
 
     The cell location can be determined given the starting cell location and
@@ -34,9 +34,8 @@ def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
     or TypeError may be raised, albeit indirectly.
 
     Args:
-        start (Dict[str, Union[str, int]]): the characteristics of
-            the starting (top-left) cell in the sheet; contains
-            'cell' (spreadsheet format), 'year', and 'month'
+        cell (str): starting cell of spreadsheet in spreadsheet format
+        start (Dict[str, int]): month and year of the starting cell
 
     Returns:
         str: the cell in spreadsheet format, e.g. 'A1'
@@ -46,9 +45,11 @@ def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
         TypeError: slicing or casting on None
 
     """
-    cell = start['cell']
     first = pendulum.datetime(start['year'], start['month'], 1, tz='local')
-    col_end = ALPHA.search(cell).end()
+    search = ALPHA.search(cell)
+    if not search:
+        raise ValueError(f'RegEx could not match {cell}')
+    col_end = search.end()
     col = cell[:col_end].upper()
     # We want to perform math on cols to get the right column.
     # To do so, we must convert the letters using `ord()`.
@@ -59,12 +60,12 @@ def get_yesterday_cell(start: Dict[str, Union[str, int]]) -> str:
         col = chr(ncol)
     else: # After Z in columns are AA, AB, etc.
         col = f'A{chr(ncol - 26)}'
-    # `monthy` represents the row given year and month, with offsets
+    # `row_year_month` represents the row given year and month, with offsets
     # from `start`.
-    monthy = int(cell[col_end:])
-    monthy += (config.YESTERDAY - first).months
+    row_year_month = int(cell[col_end:])
+    row_year_month += (config.YESTERDAY - first).months
 
-    return f'{col}{monthy}'
+    return f'{col}{row_year_month}'
 
 
 class Sheets:
@@ -104,7 +105,7 @@ class Sheets:
             cell = start['cell']
 
             try:
-                yesterday = get_yesterday_cell(start)
+                yesterday = get_yesterday_cell(cell, start)
             except (AttributeError, TypeError, ValueError) as e:
                 config.LOGGER.error(f'Skipping {tab}: {e}')
                 continue
