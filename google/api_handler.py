@@ -17,8 +17,6 @@ from pathlib import Path
 
 from google.oauth2 import service_account
 
-import google.calendar
-import google.sheets
 from config import LOGGER
 
 # Replaced imports:

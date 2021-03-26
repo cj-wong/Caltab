@@ -16,7 +16,7 @@ from typing import Dict, Union
 
 import pendulum
 from google.oauth2 import service_account
-from googleapiclient.discovery import build, Resource
+from googleapiclient.discovery import build
 
 import config
 
