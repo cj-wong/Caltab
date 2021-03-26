@@ -18,27 +18,26 @@ import pendulum
 import yaml
 
 
-LOGGER = logging.getLogger('calendar-to-sheets')
+_LOGGER_NAME = 'caltab'
+
+LOGGER = logging.getLogger(_LOGGER_NAME)
 LOGGER.setLevel(logging.DEBUG)
 
-FH = logging.handlers.RotatingFileHandler(
-    'calendar-to-sheets.log',
-    maxBytes=4096,
+_FH = logging.handlers.RotatingFileHandler(
+    f'{_LOGGER_NAME}.log',
+    maxBytes=40960,
     backupCount=5,
     )
-FH.setLevel(logging.DEBUG)
+_FH.setLevel(logging.DEBUG)
 
-CH = logging.StreamHandler()
-CH.setLevel(logging.INFO)
+_CH = logging.StreamHandler()
+_CH.setLevel(logging.WARNING)
 
-FORMATTER = logging.Formatter(
+_FORMATTER = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-FH.setFormatter(FORMATTER)
-CH.setFormatter(FORMATTER)
-
-LOGGER.addHandler(FH)
-LOGGER.addHandler(CH)
+_FH.setFormatter(_FORMATTER)
+_CH.setFormatter(_FORMATTER)
 
 YESTERDAY = pendulum.yesterday()
 TODAY = pendulum.today()
