@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.0.2] - 2021-04-30
+### Security
+- Updated `urllib3`.
+
 ## [2.0.1] - 2021-03-26
 ### Changed
 - Updated `google-api-python-client` to 2.0.2 and its dependencies. Although this is a breaking change from the module's end, no changes were needed for the project.
