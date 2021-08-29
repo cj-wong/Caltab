@@ -1,6 +1,7 @@
 cachetools==3.1.1
-certifi==2019.9.11
+certifi==2021.5.30
 chardet==3.0.4
+charset-normalizer==2.0.4
 google-api-core==1.26.2
 google-api-python-client==2.0.2
 google-auth==1.28.0
@@ -8,7 +9,7 @@ google-auth-httplib2==0.0.3
 google-auth-oauthlib==0.4.0
 googleapis-common-protos==1.53.0
 httplib2==0.19.0
-idna==2.8
+idna==3.2
 oauthlib==3.1.0
 packaging==20.9
 pendulum==2.0.5
@@ -20,9 +21,9 @@ python-dateutil==2.8.0
 pytz==2021.1
 pytzdata==2019.3
 PyYAML==5.4
-requests==2.22.0
+requests==2.26.0
 requests-oauthlib==1.2.0
 rsa==4.7.2
 six==1.15.0
 uritemplate==3.0.0
-urllib3==1.26.5
+urllib3==1.26.6
